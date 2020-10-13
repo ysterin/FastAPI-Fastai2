@@ -2,12 +2,15 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastai.vision.all import *
+from fastai import __version__
+print(__version__)
 import uvicorn
 import asyncio
 import aiohttp
 import aiofiles
 from fastapi.middleware.cors import CORSMiddleware
-
+import ptvsd
+ptvsd.enable_attach(address=('0.0.0.0', 5678))
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -28,7 +31,7 @@ app.add_middleware(
 
 path = Path(__file__).parent
 # REPLACE THIS WITH YOUR URL
-export_url = "<your link to your model>"
+export_url = "https://storage.googleapis.com/mindat-models/export.pkl"
 export_file_name = 'export.pkl'
 
 
@@ -76,7 +79,9 @@ async def homepage():
 @app.post("/analyze")
 async def analyze(file: bytes = File(...)):
     pred = learn.predict(file)
-    return {"result": pred[0]}
+    class_id = pred[1].item()
+    probability = pred[2][class_id]
+    return {"result": pred[0], "probability": probability}
 
 
 if __name__ == "__main__":

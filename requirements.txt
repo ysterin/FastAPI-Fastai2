@@ -3,3 +3,4 @@ jupyterlab
 asyncio
 aiohttp
 aiofiles
+ptvsd==4.3.2
